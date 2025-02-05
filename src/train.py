@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from anita import AnitaAI  # Import the AnitaAI class
 
 # Load and preprocess the dataset
 def load_data(file_path, encoding='utf-8'):
@@ -28,19 +29,22 @@ def preprocess_data(lines):
     return padded_sequences, tokenizer
 
 def create_training_data(padded_sequences, seq_length):
-    X = []
-    y = []
+    num_sequences = sum(len(seq) - seq_length for seq in padded_sequences if len(seq) > seq_length)
+    X = np.zeros((num_sequences, seq_length), dtype=np.int32)
+    y = np.zeros((num_sequences,), dtype=np.int32)
+    
+    index = 0
     for seq in padded_sequences:
-        if len(seq) > seq_length:  # Ensure sequence length is greater than seq_length
+        if len(seq) > seq_length:
             for i in range(seq_length, len(seq)):
-                X.append(seq[i-seq_length:i])
-                y.append(seq[i])
-    X = np.array(X)
-    y = np.array(y)
+                X[index] = seq[i-seq_length:i]
+                y[index] = seq[i]
+                index += 1
+                
     return X, y
 
 # Example usage
-file_path = r'C:\Users\Mr.Popo\AnitaAi\data\cornell_movie_quotes_corpus\moviequotes.scripts.txt'  # Use raw string for file path
+file_path = r'C:\Users\MrPopo\Documents\GitHub\AnitaAIRepo\data\cornell_movie_quotes_corpus\moviequotes.memorable_quotes.txt'  # Use raw string for file path
 try:
     lines = load_data(file_path)
     print("File loaded successfully.")
